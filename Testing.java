@@ -84,7 +84,6 @@ public class Testing {
     public static void testFileCreation(){
         dataStorage.initializeFiles();
 
-
         System.out.println("Beginning testing of LocationKeyValue...");
 
         DataHandling paris = new DataHandling("Paris");
@@ -104,6 +103,33 @@ public class Testing {
             dataStorage.deleteFile();
         } else {
             System.out.println("Program terminated.");
+        }
+    }
+
+    public static void testFileReader(){
+            dataStorage.initializeFiles();
+
+        System.out.println("Beginning testing of FileReader...");
+
+        DataHandling paris = new DataHandling("Paris");
+
+        paris.addLocationKeyValue("Population",2103000);
+        paris.addLocationKeyValue("Area",40.7);
+        paris.addLocationKeyValue("Currency","Euro");
+
+        System.out.println("\n--- Print All Key Value pairs ---\n");
+        paris.printKeyValues();
+
+        dataStorage.writeToFile(paris.getLocationData(),paris.getActivitiesData());
+
+        try {
+            System.out.println("\n\nNow printing retrieved values...");
+            KeyValue[] testStringArray = dataStorage.readFile("Location_Data_File.txt");
+            for (int i = 0; i < testStringArray.length; ++i){
+                System.out.println("Key: " + testStringArray[i].getKey() + ", Value: " + testStringArray[i].getValue());
+            }
+        } catch (Error e){
+            System.out.println("There was an error.");
         }
     }
 }

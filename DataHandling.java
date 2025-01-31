@@ -2,6 +2,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.io.File;
+import java.util.Scanner;
 
 public class DataHandling {
     private ArrayList<KeyValue> locationData;
@@ -92,43 +93,12 @@ class KeyValue <K,V>{
     public void setValue(V value){
         this.value = value;
     }
-}
-//beginning of Scoring class
-class Scoring <K,V>{
-    private ArrayList<KeyValue> preferences;
-
-    public Scoring() {
-        this.preferences = new ArrayList<>();
-
-//        Initialize general specific key values for scoring and storage
-//        Climate
-        KeyValue temperature = new KeyValue();
-        KeyValue humidity = new KeyValue();
-
-//        Entertainment
-        KeyValue diningQuality = new KeyValue();
-        KeyValue parksAmt = new KeyValue();
-        KeyValue beaches = new KeyValue();
-
-//        Location
-        KeyValue populationSize = new KeyValue();
-        KeyValue populationDensity = new KeyValue();
-        KeyValue walkabilityScore = new KeyValue();
-        KeyValue airportAccess = new KeyValue();
-        KeyValue crimeRate = new KeyValue();
-        KeyValue corruption = new KeyValue();
-    }
-    public void generalize(){}
-    public void addPreference(K key, V value){
-        KeyValue temp = new KeyValue(key, value);
-    }
-
-    public void removePreference(K key, V value){
-        KeyValue temp = new KeyValue(key, value);
+    public void setKey(K key){
+        this.key = key;
     }
 }
 
-class dataStorage {
+class dataStorage <T>{
     private static File locationDataFile;
     private static File activitiesDataFile;
     static boolean fileExists = false;
@@ -160,7 +130,7 @@ class dataStorage {
         }
     }
     public static void deleteFile(){
-        if (locationDataFile.delete()){
+        if (locationDataFile.delete() && activitiesDataFile.delete()){
             System.out.println("File was deleted successfully...Ending process...");
         } else {
             System.out.println("File was not deleted successfully...Ending process...");
@@ -199,6 +169,56 @@ class dataStorage {
         } catch (IOException e){
             System.out.println("There was a data storage error when writing to the Activities file.");
             e.printStackTrace();
+        }
+    }
+    public static KeyValue[] readFile(String fileName){
+        // initializes file
+        ArrayList<KeyValue> fileData = new ArrayList<>();
+        Scanner fileReader;
+        String[][] data;
+        KeyValue[] convertedKeyValues = new KeyValue[0];
+
+        try {
+            File fileToReturn = new File(fileName);
+            fileReader = new Scanner(fileToReturn);
+
+            // un-comma delimits data
+            String delimitedData = fileReader.nextLine();
+            String[] rawData = delimitedData.split(",");
+
+            // separates the keys and the values
+            data = new String[rawData.length][rawData.length];
+            for (int i = 0; i < rawData.length; ++i){
+                    String[] temp = rawData[i].split(" ");
+                    data[i][0] = temp[0];
+                    data[i][1] = temp[1];
+            }
+            // converts into a key value array
+            convertedKeyValues = new KeyValue[data.length];
+            for (int i = 0; i < data.length; ++i){
+                convertedKeyValues[i].setKey(data[i][0]);
+                if (data[0][0] != null){
+                    try {
+                        // iterates through value checking for decimals
+                        if (data[i][0].contains(".")){
+                            convertedKeyValues[i].setValue(Double.parseDouble(data[i][1]));
+                        } else {
+                            convertedKeyValues[i].setValue(Integer.parseInt(data[i][1]));
+                        }
+                    } catch (Error e){
+                        convertedKeyValues[i].setValue(data[i][1]);
+                    }
+                }
+            }
+            return convertedKeyValues;
+        } catch (IOException e){ //catches file errors
+            System.out.println("File " + fileName + " does not exist or there was an error.");
+            data = new String[0][0];
+            return convertedKeyValues;
+        } catch (Error e){ // catches general errors
+            System.out.println("There was an error when retrieving the data from " + fileName + ".");
+            data = new String[0][0];
+            return convertedKeyValues;
         }
     }
 }
